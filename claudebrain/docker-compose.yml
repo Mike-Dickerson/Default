@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  claude-memory:
+    image: postgres:16-alpine
+    container_name: claude-memory
+    environment:
+      POSTGRES_DB: claude_memory
+      POSTGRES_USER: claude
+      POSTGRES_PASSWORD: dev_only_password
+    ports:
+      - "5434:5432"  # Port 5434 to avoid conflicts with other PostgreSQL instances
+    volumes:
+      - ./data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U claude"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
