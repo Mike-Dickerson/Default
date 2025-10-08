@@ -125,23 +125,34 @@ This repository includes **ClaudeBrain**, a PostgreSQL-based persistent memory s
 - **Password:** dev_only_password
 - **Container:** claude-memory (Docker)
 
-### ClaudeBrain Location
-- **Database:** `C:\default\claudebrain\` (Docker container)
-- **CLI Tool:** `C:\default\claudebrain\cli\brain.py`
-- **Schema:** `C:\default\claudebrain\init.sql`
+### ClaudeBrain Architecture
+
+**Important:** ClaudeBrain uses a **shared database** with **per-repo CLI tools**:
+
+- **Shared Container:** One `claude-memory` Docker container runs the PostgreSQL database
+  - All repos connect to the same database instance
+  - Container managed from: `C:\default\claudebrain\` (reference/master copy)
+  - Database persists across all projects
+  - Port 5434 accessible from anywhere
+
+- **Local CLI Tools:** Each repo has its own `\claudebrain\` folder
+  - Example: `C:\myproject\claudebrain\cli\brain.py`
+  - Contains the same CLI tools as the master
+  - **All commands run from the LOCAL repo's claudebrain folder**
+  - Connects to the shared container on localhost:5434
 
 ### Core Commands
 
-Start database (first time):
+Start database (first time only - from master location):
 ```bash
 cd C:\default\claudebrain
 docker-compose up -d
 pip install -r cli/requirements.txt
 ```
 
-Search for context:
+Search for context (from your current repo):
 ```bash
-cd C:\default\claudebrain\cli
+cd claudebrain/cli
 python brain.py search "keyword"
 ```
 
@@ -199,8 +210,8 @@ Claude: [Searches ClaudeBrain, starts session, provides context from past work]
 ### Session Workflow
 
 ```bash
-# 1. User mentions [brain] or you start work
-cd C:\default\claudebrain\cli
+# 1. User mentions [brain] or you start work (from local repo)
+cd claudebrain/cli
 python brain.py search "relevant keywords"
 
 # 2. Start session for the work
