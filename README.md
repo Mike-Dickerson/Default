@@ -12,5 +12,10 @@ Added a new one today.  A brain container that's local to my dev machine. baisca
 enable reading/writing of "memories" for claude to use. include the intructions.md in your project folder and when you start
 Claude, you can use /brain or [brain] and keywords. then start discussing from there.  
 
+Use this template to start your project. Go into the claudebrain folder and "docker compose up -d"   After it starts Then start Claude
+and the instructions.md will tell claude to use his new persistent memory.  You only need to start teh container once. Any instance of 
+Claude (as long as its stated with this instructions.md) will know about persistent memory and what's been going on in the world. 
+
+Have fun with it
 
 Mike
