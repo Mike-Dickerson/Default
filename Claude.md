@@ -104,3 +104,183 @@ Read this file completely before making ANY changes. When in doubt, ASK FIRST. T
 #### Session 1 (YYYY-MM-DD)
 - Initial setup and exploration
 - [Add notes here as project evolves]
+
+---
+
+## ClaudeBrain - Persistent Memory System
+
+This repository includes **ClaudeBrain**, a PostgreSQL-based persistent memory system that provides cross-session context for Claude Code.
+
+### What ClaudeBrain Solves
+- Eliminates repeating context every session
+- Remembers decisions, gotchas, and patterns
+- Searchable history of all work
+- Builds institutional knowledge over time
+
+### Database Connection
+- **Host:** localhost
+- **Port:** 5434
+- **Database:** claude_memory
+- **User:** claude
+- **Password:** dev_only_password
+- **Container:** claude-memory (Docker)
+
+### ClaudeBrain Location
+- **Database:** `C:\default\claudebrain\` (Docker container)
+- **CLI Tool:** `C:\default\claudebrain\cli\brain.py`
+- **Schema:** `C:\default\claudebrain\init.sql`
+
+### Core Commands
+
+Start database (first time):
+```bash
+cd C:\default\claudebrain
+docker-compose up -d
+pip install -r cli/requirements.txt
+```
+
+Search for context:
+```bash
+cd C:\default\claudebrain\cli
+python brain.py search "keyword"
+```
+
+Start new session:
+```bash
+python brain.py start "goal description" "project_name"
+# Returns: Session #42
+```
+
+Log decisions as you work:
+```bash
+python brain.py decision 42 "what you decided" "why you decided it"
+```
+
+Log gotchas (problems + solutions):
+```bash
+python brain.py gotcha 42 "problem description" "solution"
+```
+
+Log file changes:
+```bash
+python brain.py file 42 "path/to/file" "modified" "what changed"
+```
+
+End session:
+```bash
+python brain.py end 42 "summary of what was accomplished" "success"
+```
+
+View recent sessions:
+```bash
+python brain.py recent 10
+```
+
+Show statistics:
+```bash
+python brain.py stats
+```
+
+### [brain] Keyword Trigger
+
+When the user starts a message with `[brain] keyword`, Claude should:
+
+1. **Search** for context: `python brain.py search "keyword"`
+2. **Start** a new session: `python brain.py start "task goal"`
+3. **Log** decisions and gotchas as you work
+4. **End** session with summary when complete
+
+Example:
+```
+User: [brain] dashboard filters
+Claude: [Searches ClaudeBrain, starts session, provides context from past work]
+```
+
+### Session Workflow
+
+```bash
+# 1. User mentions [brain] or you start work
+cd C:\default\claudebrain\cli
+python brain.py search "relevant keywords"
+
+# 2. Start session for the work
+python brain.py start "Task description" "project_name"
+# Note the session_id returned (e.g., 42)
+
+# 3. As you work, log important things
+python brain.py decision 42 "Use approach X" "Because Y and Z"
+python brain.py gotcha 42 "Problem A" "Solution B"
+python brain.py file 42 "path/file.py" "modified" "Added feature C"
+
+# 4. End session with summary
+python brain.py end 42 "Completed task successfully" "success"
+```
+
+### Database Schema
+
+**Core Tables:**
+- `sessions` - Coding session metadata (goals, outcomes, timestamps)
+- `files_modified` - File change tracking with diffs
+- `decisions` - Architectural/design decisions with reasoning
+- `gotchas` - Problems encountered and solutions (with severity)
+- `code_patterns` - Reusable patterns and best practices
+- `rules` - Project-specific rules (like this CLAUDE.md content)
+
+**Helper Functions:**
+- `start_session(goal, project)` - Creates new session
+- `end_session(id, summary, outcome)` - Ends session
+- `search_context(term, limit)` - Full-text search across all content
+
+**Useful Views:**
+- `recent_sessions` - Session overview with stats
+- `file_change_frequency` - Most modified files
+- `files_changed_together` - Co-change patterns
+
+### Direct SQL Access
+
+```bash
+# Via Docker
+docker exec -it claude-memory psql -U claude -d claude_memory
+
+# Via psql
+psql -h localhost -p 5434 -U claude -d claude_memory
+# Password: dev_only_password
+```
+
+### Troubleshooting ClaudeBrain
+
+Check if running:
+```bash
+docker ps | grep claude-memory
+```
+
+View logs:
+```bash
+docker logs claude-memory
+```
+
+Restart:
+```bash
+cd C:\default\claudebrain
+docker-compose restart
+```
+
+Reset database (WARNING: destroys all data):
+```bash
+docker-compose down -v
+docker-compose up -d
+```
+
+### Best Practices
+
+1. **Search before explaining** - Check ClaudeBrain before asking user for context
+2. **Start every non-trivial session** - Creates tracking context
+3. **Log as you go** - Don't wait until the end
+4. **Good summaries** - Make searching easier later
+5. **End sessions** - Provides closure and statistics
+
+### Documentation
+
+- Full docs: `C:\default\claudebrain\README.md`
+- Quick reference: `C:\default\claudebrain\QUICKSTART.md`
+- Usage instructions: `C:\default\instructions.md`
