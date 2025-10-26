@@ -4,9 +4,12 @@ You have access to a persistent memory system called **ClaudeBrain** that stores
 
 ## Location
 - Database: PostgreSQL container at `localhost:5434`
-- CLI Tool: `C:\claudebrain\cli\brain.py`
+- CLI Tool: `\brain.py`
 
 ## Usage
+Depending on your installation you may need to run:
+  pip install python-dotenv
+
 
 ### Triggering Brain Search
 When the user starts a message with `[brain]` followed by keywords, you should:
@@ -24,38 +27,38 @@ You: [Search for "dashboard filters", then start a session]
 ### Available Commands
 
 Search for context:
-```bash
-cd /c/claudebrain/cli && python brain.py search "keyword"
+```bash 
+python brain.py search "keyword"
 ```
 
 Start a new session:
-```bash
-cd /c/claudebrain/cli && python brain.py start "goal description" "project_name"
+```bash 
+python brain.py start "goal description" "project_name"
 ```
 
 Log a decision:
 ```bash
-cd /c/claudebrain/cli && python brain.py decision <session_id> "decision made" "reasoning"
+python brain.py decision <session_id> "decision made" "reasoning"
 ```
 
 Log a gotcha/problem solved:
 ```bash
-cd /c/claudebrain/cli && python brain.py gotcha <session_id> "problem description" "solution"
+python brain.py gotcha <session_id> "problem description" "solution"
 ```
 
 Log a file change:
 ```bash
-cd /c/claudebrain/cli && python brain.py file <session_id> "file/path" "modified" "what changed"
+python brain.py file <session_id> "file/path" "modified" "what changed"
 ```
 
 End a session:
 ```bash
-cd /c/claudebrain/cli && python brain.py end <session_id> "summary of what was accomplished" "success"
+python brain.py end <session_id> "summary of what was accomplished" "success"
 ```
 
 View recent sessions:
 ```bash
-cd /c/claudebrain/cli && python brain.py recent 10
+python brain.py recent 10
 ```
 
 ## When to Use

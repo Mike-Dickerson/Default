@@ -21,7 +21,7 @@ The user will specify one of these operations after `/brain`:
 
 ## Your Task
 
-1. **Navigate to LOCAL repo's ClaudeBrain CLI**: `cd claudebrain/cli` (or appropriate path from current location)
+1. **Navigate to LOCAL repo's ClaudeBrain CLI**: (or appropriate path from current location)
 2. **Execute the requested operation** using `python brain.py <operation> <args>`
 3. **Display the results** clearly to the user
 4. **If it's a search**: Summarize relevant findings
@@ -29,7 +29,9 @@ The user will specify one of these operations after `/brain`:
 
 ## Architecture Note
 
-- Each repo has its own `claudebrain/cli/` folder
+- Each repo has its own `claudebrain/cli/` folder. If using localhost, 
+  open & run the container, or if using an existing shared brain host, you can delete it from your project folder. 
+- Update .env file to your shared brain host, or localhost. 
 - All repos connect to the same shared `claude-memory` container (port 5434)
 - Always use the LOCAL repo's claudebrain folder, not C:\default\claudebrain
 
@@ -37,13 +39,13 @@ The user will specify one of these operations after `/brain`:
 
 ```bash
 # User: /brain search authentication
-cd claudebrain/cli && python brain.py search "authentication"
+python brain.py search "authentication"
 
 # User: /brain start "Add user login feature" myproject
-cd claudebrain/cli && python brain.py start "Add user login feature" "myproject"
+python brain.py start "Add user login feature" "myproject"
 
 # User: /brain recent 5
-cd claudebrain/cli && python brain.py recent 5
+python brain.py recent 5
 ```
 
 ## Important Notes
