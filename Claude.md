@@ -72,6 +72,44 @@ Read this file completely before making ANY changes. When in doubt, ASK FIRST. T
 
 ---
 
+## Database Schema Pattern (Preferred)
+
+When designing database initialization for any project, prefer the **declarative dict + idempotent init** pattern over migration-based approaches:
+
+- Define all tables and columns in a single dict (the source of truth).
+- On startup, loop through the dict:
+  - Table missing? `CREATE TABLE` with all columns.
+  - Table exists? Check each column — if missing, `ALTER TABLE ADD COLUMN`.
+- No version numbers, no migration files, no ordering issues.
+- Idempotent — safe to run on every startup; only applies what's needed.
+- Adding a column = add one line to the dict and redeploy.
+
+Reference implementation: `G:\myresumechat\backend\init_db.py`
+
+This avoids the class of bugs where a pre-packaged or existing database gets out of sync with the expected schema (e.g., Room migration mismatches on Android).
+
+---
+
+## Table Prefix Pattern (Data Isolation)
+
+When you need multiple isolated datasets (live vs demo, per-tenant, per-environment) sharing the same code path, use a **table prefix variable** instead of separate code paths or if/else branching:
+
+```python
+# One code path, multiple isolated datasets
+table_prefix = "demo_" if demo_mode else ""
+query = f"SELECT * FROM {table_prefix}users WHERE ..."
+```
+
+- Create identical table structures with different prefixes: `users` / `demo_users`, `resumes` / `demo_resumes`
+- All query logic stays the same — only the prefix changes.
+- No duplicate endpoints, no demo-specific routes, no branching logic.
+- Complete data isolation — demo users can't see live data and vice versa.
+- Works for: live/demo, multi-tenant, test/prod, A/B datasets.
+
+Reference implementation: `G:\myresumechat\backend\app\routes\recruiter_app.py` using `get_table_prefix_for_recruiter()`
+
+---
+
 ## Project-Specific Information
 
 **Add your project details below this line. The rules above are universal and apply to ALL projects.**
