@@ -286,6 +286,118 @@ def show_stats():
         cur.close()
         conn.close()
 
+def show_session(session_id):
+    """Show full details for a single session by ID."""
+    conn = get_connection()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+    try:
+        # Basic session overview from the recent_sessions view
+        cur.execute("SELECT * FROM recent_sessions WHERE id = %s", (session_id,))
+        session = cur.fetchone()
+
+        if not session:
+            print(f"❌ No session found with id {session_id}")
+            return
+
+        print(f"🧠 Session #{session['id']} - {session['session_date']}")
+        print(f"Project: {session['project_name'] or 'N/A'}")
+        if session.get("summary"):
+            print(f"Summary: {session['summary']}")
+        print(
+            f"Activity: {session['files_changed']} files, "
+            f"{session['decisions_made']} decisions, "
+            f"{session['gotchas_encountered']} gotchas"
+        )
+        print("\n" + "=" * 80)
+
+        # Files modified in this session
+        cur.execute(
+            """
+            SELECT id, file_path, change_type, change_summary
+            FROM files_modified
+            WHERE session_id = %s
+            ORDER BY id ASC
+            """,
+            (session_id,),
+        )
+        files = cur.fetchall()
+
+        print("📄 Files")
+        if not files:
+            print("  (none logged)")
+        else:
+            for f in files:
+                summary = f.get("change_summary") or ""
+                line = f"  [#{f['id']}] {f['file_path']} ({f['change_type']})"
+                if summary:
+                    line += f" — {summary}"
+                print(line)
+
+        print("\n" + "=" * 80)
+
+        # Decisions logged in this session
+        cur.execute(
+            """
+            SELECT id, decision, reasoning, alternatives_considered, tags
+            FROM decisions
+            WHERE session_id = %s
+            ORDER BY id ASC
+            """,
+            (session_id,),
+        )
+        decisions = cur.fetchall()
+
+        print("🧩 Decisions")
+        if not decisions:
+            print("  (none logged)")
+        else:
+            for d in decisions:
+                print(f"  [#{d['id']}] {d['decision']}")
+                if d.get("reasoning"):
+                    print(f"    💭 {d['reasoning']}")
+                if d.get("alternatives_considered"):
+                    print(f"    🔀 Alternatives: {d['alternatives_considered']}")
+                if d.get("tags"):
+                    print(f"    🏷️ Tags: {', '.join(d['tags'])}")
+
+        print("\n" + "=" * 80)
+
+        # Gotchas logged in this session
+        cur.execute(
+            """
+            SELECT id, problem, solution, file_path, error_message,
+                   time_wasted_minutes, severity
+            FROM gotchas
+            WHERE session_id = %s
+            ORDER BY id ASC
+            """,
+            (session_id,),
+        )
+        gotchas = cur.fetchall()
+
+        print("⚠️ Gotchas")
+        if not gotchas:
+            print("  (none logged)")
+        else:
+            for g in gotchas:
+                print(f"  [#{g['id']}] {g['problem']}")
+                print(f"    ✨ Solution: {g['solution']}")
+                if g.get("file_path"):
+                    print(f"    📄 File: {g['file_path']}")
+                if g.get("error_message"):
+                    print(f"    🧵 Error: {g['error_message']}")
+                if g.get("time_wasted_minutes") is not None:
+                    print(f"    ⏱️ Time wasted: {g['time_wasted_minutes']} min")
+                if g.get("severity"):
+                    print(f"    🔥 Severity: {g['severity']}")
+
+    except Exception as e:
+        print(f"❌ Error showing session {session_id}: {e}")
+    finally:
+        cur.close()
+        conn.close()
+
 def show_help():
     """Show help message"""
     print("""
@@ -297,6 +409,7 @@ COMMANDS:
   decision <session_id> <decision> <reasoning>   Log decision
   gotcha <session_id> <problem> <solution>       Log gotcha
   file <session_id> <path> [type] [summary]      Log file change
+  show <session_id>               Show full details for a session
   search <term>                   Search context
   recent [limit]                  Show recent sessions
   stats                          Show statistics
@@ -382,6 +495,13 @@ def main():
 
         elif command == 'stats':
             show_stats()
+
+        elif command == 'show':
+            if len(sys.argv) < 3:
+                print("Usage: python brain.py show <session_id>")
+                return
+            session_id = int(sys.argv[2])
+            show_session(session_id)
 
         elif command in ['help', '-h', '--help']:
             show_help()
